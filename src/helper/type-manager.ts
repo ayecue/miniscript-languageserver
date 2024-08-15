@@ -1,4 +1,3 @@
-import { miniscriptMeta } from 'miniscript-meta';
 import {
   ASTBase,
   ASTCallExpression,
@@ -8,6 +7,7 @@ import {
   ASTSliceExpression,
   ASTType
 } from 'miniscript-core';
+import { miniscriptMeta } from 'miniscript-meta';
 import { TypeManager } from 'miniscript-type-analyzer';
 
 export const lookupIdentifier = (root: ASTBase): ASTBase | null => {

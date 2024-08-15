@@ -104,9 +104,7 @@ export class ActiveDocument {
     const workspacePaths =
       await this.documentManager.context.fs.getWorkspaceFolderUris();
     const importsAndIncludes = this.getImportsAndIncludes(workspacePaths[0]);
-    const dependencies: Set<string> = new Set([
-      ...importsAndIncludes
-    ]);
+    const dependencies: Set<string> = new Set([...importsAndIncludes]);
 
     this.dependencies = Array.from(dependencies);
 

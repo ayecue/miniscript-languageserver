@@ -1,5 +1,4 @@
-import { BuildType } from 'greybel-transpiler';
-import { DirectTranspiler } from 'greybel-transpiler';
+import { BuildType, DirectTranspiler } from 'greybel-transpiler';
 import {
   DocumentFormattingParams,
   Range,
