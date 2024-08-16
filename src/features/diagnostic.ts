@@ -1,10 +1,8 @@
 import { ASTRange } from 'miniscript-core';
-import {
+import type {
   Diagnostic,
-  DiagnosticSeverity,
   DocumentDiagnosticParams,
-  DocumentDiagnosticReportKind
-} from 'vscode-languageserver/node';
+} from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import documentManager from '../helper/document-manager';
@@ -29,7 +27,7 @@ async function lookupErrors(document: TextDocument): Promise<Diagnostic[]> {
           }
         },
         message: err.message,
-        severity: DiagnosticSeverity.Error
+        severity: 1 // DiagnosticSeverity.Error
       };
     }
 
@@ -39,7 +37,7 @@ async function lookupErrors(document: TextDocument): Promise<Diagnostic[]> {
         end: activeDocument.document.end
       },
       message: err.message,
-      severity: DiagnosticSeverity.Error
+      severity: 1 // DiagnosticSeverity.Error
     };
   });
 }
@@ -58,13 +56,13 @@ export function activate(context: IContext) {
 
       if (diagnostics.length === 0) {
         return {
-          kind: DocumentDiagnosticReportKind.Full,
+          kind: 'full', // DocumentDiagnosticReportKind.Full,
           items: []
         };
       }
 
       return {
-        kind: DocumentDiagnosticReportKind.Full,
+        kind: 'full', // DocumentDiagnosticReportKind.Full,
         items: diagnostics
       };
     }

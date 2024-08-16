@@ -4,11 +4,11 @@ import {
   SignatureDefinitionTypeMeta
 } from 'meta-utils';
 import { IEntity } from 'miniscript-type-analyzer';
-import {
+import type {
   Hover,
   ParameterInformation,
   SignatureInformation
-} from 'vscode-languageserver/node';
+} from 'vscode-languageserver';
 
 import { LanguageId } from '../types';
 import { MarkdownString } from './markdown-string';
@@ -40,10 +40,9 @@ export const createTooltipHeader = (
       (item) =>
         `${item.getLabel()}${item.isOptional() ? '?' : ''}: ${formatTypes(
           item.getTypes()
-        )}${
-          item.getDefault()
-            ? ` = ${formatDefaultValue(item.getDefault().value)}`
-            : ''
+        )}${item.getDefault()
+          ? ` = ${formatDefaultValue(item.getDefault().value)}`
+          : ''
         }`
     )
     .join(', ');
