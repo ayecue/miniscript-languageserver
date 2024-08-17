@@ -1,7 +1,5 @@
 # miniscript-languageserver
 
-[![miniscript-languageserver](https://circleci.com/gh/ayecue/miniscript-languageserver.svg?style=svg)](https://circleci.com/gh/ayecue/miniscript-languageserver)
-
 Language server for MiniScript. Provides several features such as auto-completion, hover tooltips and more.
 
 Should work with any other client which is following [LSP standards](https://code.visualstudio.com/api/language-extensions/language-server-extension-guide). Feel free to take a look at a full [implementation](https://github.com/ayecue/miniscript-vs) into VSCode.
