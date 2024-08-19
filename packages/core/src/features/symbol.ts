@@ -51,6 +51,11 @@ const findAllAssignments = (
 export function activate(context: IContext) {
   context.connection.onDocumentSymbol(async (params: DocumentSymbolParams) => {
     const document = await context.fs.getTextDocument(params.textDocument.uri);
+
+    if (document == null) {
+      return;
+    }
+
     const parseResult = context.documentManager.get(document);
 
     if (!parseResult.document) {
