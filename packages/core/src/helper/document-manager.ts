@@ -61,7 +61,7 @@ export class ActiveDocument implements IActiveDocument {
     return Utils.joinPath(URI.parse(this.textDocument.uri), '..');
   }
 
-  private getImportsAndIncludes(workspaceFolderUri: URI = null): string[] {
+  private async getImportsAndIncludes(workspaceFolderUri: URI = null): Promise<string[]> {
     if (this.document == null) {
       return [];
     }
@@ -70,7 +70,7 @@ export class ActiveDocument implements IActiveDocument {
     const rootPath = this.getDirectory();
     const context = this.documentManager.context;
     const builder = new DocumentURIBuilder(rootPath, workspaceFolderUri);
-    const getPath = (path: string) => {
+    const getPath = (path: string): Promise<string | null> => {
       if (path.startsWith('/')) {
         return context.fs.findExistingPath(
           builder.getFromWorkspaceFolder(path),
@@ -83,14 +83,16 @@ export class ActiveDocument implements IActiveDocument {
       );
     };
 
-    return [
+    const paths = await Promise.all([
       ...rootChunk.imports
         .filter((nonNativeImport) => nonNativeImport.path)
         .map((nonNativeImport) => getPath(nonNativeImport.path)),
       ...rootChunk.includes
         .filter((includeImport) => includeImport.path)
         .map((includeImport) => getPath(includeImport.path))
-    ];
+    ]);
+
+    return paths.filter((path) => path != null);
   }
 
   async getDependencies(): Promise<string[]> {
@@ -106,7 +108,7 @@ export class ActiveDocument implements IActiveDocument {
       await this.documentManager.context.fs.getWorkspaceFolderUri(
         URI.parse(this.textDocument.uri)
       );
-    const importsAndIncludes = this.getImportsAndIncludes(workspacePathUri);
+    const importsAndIncludes = await this.getImportsAndIncludes(workspacePathUri);
     const dependencies: Set<string> = new Set([...importsAndIncludes]);
 
     this.dependencies = Array.from(dependencies);

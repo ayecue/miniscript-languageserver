@@ -49,8 +49,9 @@ export function activate(context: IContext) {
       result.toString(),
       resultAlt.toString()
     );
-
-    const output = [
+    const output: string[] = target == null ? [
+      'Cannot open file.'
+    ] : [
       `[Inserts file "${path.basename(
         target
       )}" inside this code when building](${target.toString()})`,
