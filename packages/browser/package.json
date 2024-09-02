@@ -1,6 +1,6 @@
 {
   "name": "miniscript-languageserver-browser",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Language server for MiniScript",
   "main": "./index.js",
   "scripts": {
@@ -67,7 +67,7 @@
     "greybel-core": "~2.0.4",
     "miniscript-meta": "~1.2.3",
     "greybel-transpiler": "~3.0.9",
-    "miniscript-type-analyzer": "~0.8.2",
+    "miniscript-type-analyzer": "~0.8.3",
     "miniscript-languageserver-core": "^1.1.0"
   }
 }
