@@ -62,7 +62,7 @@
   "peerDependencies": {
     "greybel-core": ">=2.0.0",
     "miniscript-meta": ">=1.2.0",
-    "greybel-transpiler": ">=3.0.0",
+    "greybel-transpiler": ">=3.2.0",
     "miniscript-type-analyzer": ">=0.8.0"
   },
   "dependencies": {
