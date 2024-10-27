@@ -1,5 +1,7 @@
 # miniscript-languageserver
 
+[![miniscript-languageserver](https://circleci.com/gh/ayecue/miniscript-languageserver.svg?style=svg)](https://circleci.com/gh/ayecue/miniscript-languageserver)
+
 Language server related tooling.
 
 ## Contains
