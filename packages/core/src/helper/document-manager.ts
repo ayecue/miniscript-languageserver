@@ -230,40 +230,15 @@ export class DocumentManager extends EventEmitter implements IDocumentManager {
     });
     const chunk = parser.parseChunk() as ASTChunkAdvanced;
 
-    if (chunk.body?.length > 0) {
-      typeManager.analyze(document.uri, chunk);
+    typeManager.analyze(document.uri, chunk);
 
-      return new ActiveDocument({
-        documentManager: this,
-        content,
-        textDocument: document,
-        document: chunk,
-        errors: [...parser.lexer.errors, ...parser.errors]
-      });
-    }
-
-    try {
-      const strictParser = new Parser(document.getText());
-      const strictChunk = strictParser.parseChunk() as ASTChunkAdvanced;
-
-      typeManager.analyze(document.uri, strictChunk);
-
-      return new ActiveDocument({
-        documentManager: this,
-        content,
-        textDocument: document,
-        document: strictChunk,
-        errors: []
-      });
-    } catch (err: any) {
-      return new ActiveDocument({
-        documentManager: this,
-        content,
-        textDocument: document,
-        document: null,
-        errors: [err]
-      });
-    }
+    return new ActiveDocument({
+      documentManager: this,
+      content,
+      textDocument: document,
+      document: chunk,
+      errors: [...parser.lexer.errors, ...parser.errors]
+    });
   }
 
   schedule(document: TextDocument): boolean {
