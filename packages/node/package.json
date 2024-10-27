@@ -70,7 +70,7 @@
     "greybel-core": "~2.1.1",
     "miniscript-meta": "~1.2.3",
     "greybel-transpiler": "~3.2.3",
-    "miniscript-type-analyzer": "~0.9.0",
+    "miniscript-type-analyzer": "~0.9.1",
     "miniscript-languageserver-core": "^1.2.0"
   }
 }
