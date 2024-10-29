@@ -17,6 +17,7 @@ import {
   LanguageId
 } from './types';
 import { DocumentManager } from './helper/document-manager';
+import { DocumentMerger } from './helper/document-merger';
 
 function createConfig(preset?: IConfiguration): IConfiguration {
   return {
@@ -39,6 +40,7 @@ export abstract class CoreContext extends EventEmitter implements IContext {
   abstract readonly connection: ReturnType<typeof createConnection>;
   abstract readonly fs: IFileSystem;
   abstract readonly documentManager: DocumentManager;
+  abstract readonly documentMerger: DocumentMerger;
 
   protected _features: IContextFeatures;
   protected _configuration: IConfiguration;

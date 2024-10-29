@@ -6,6 +6,9 @@ import type { TextDocument } from 'vscode-languageserver-textdocument';
 import type { URI } from 'vscode-uri';
 import type LRU from 'lru-cache';
 import type { ASTBaseBlockWithScope } from 'miniscript-core';
+import {
+  Document as TypeDocument
+} from 'miniscript-type-analyzer';
 
 export type LanguageId = 'miniscript';
 export const LanguageId: LanguageId = 'miniscript';
@@ -57,10 +60,18 @@ export interface IDocumentManager extends EventEmitter {
   clear(document: TextDocument): void;
 }
 
+export interface IDocumentMerger {
+  build(
+    document: TextDocument,
+    context: IContext
+  ): Promise<TypeDocument>
+}
+
 export interface IContext extends EventEmitter {
   readonly connection: ReturnType<typeof createConnection>;
   readonly fs: IFileSystem;
   readonly documentManager: IDocumentManager;
+  readonly documentMerger: IDocumentMerger;
 
   features: IContextFeatures;
 
