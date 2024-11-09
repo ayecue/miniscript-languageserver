@@ -1,4 +1,4 @@
-import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
+import { createConnection, ProposedFeatures, SemanticTokensBuilder } from 'vscode-languageserver/node';
 
 import { CoreContext, DocumentManager, IContext } from '../../packages/core/src';
 import { FileSystem } from './fs';
@@ -17,5 +17,9 @@ export class NodeContext extends CoreContext {
     this.documentMerger = new DocumentMerger();
     this.connection = createConnection(ProposedFeatures.all);
     this.fs = new FileSystem(this as unknown as IContext);
+  }
+
+  createSemanticTokensBuilder(): SemanticTokensBuilder {
+    return new SemanticTokensBuilder();
   }
 }
