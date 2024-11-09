@@ -11,6 +11,7 @@ export { activate as activateSymbol } from './features/symbol';
 export { activate as activateSemantic } from './features/semantic';
 export * as ASTScraper from './helper/ast-scraper';
 export { ActiveDocument, DocumentManager } from './helper/document-manager';
+export { DocumentMerger } from './helper/document-merger';
 export { LookupHelper } from './helper/lookup-type';
 export { MarkdownString } from './helper/markdown-string';
 export { createHover, createSignatureInfo, createTooltipHeader, formatDefaultValue, formatTypes, appendTooltipBody, appendTooltipHeader } from './helper/tooltip';
