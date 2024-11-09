@@ -1,8 +1,7 @@
-import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
+import { createConnection, ProposedFeatures, SemanticTokensBuilder } from 'vscode-languageserver/node';
 
-import { CoreContext, DocumentManager } from 'miniscript-languageserver-core';
+import { CoreContext, DocumentManager, DocumentMerger } from 'miniscript-languageserver-core';
 import { FileSystem } from './fs';
-import { DocumentMerger } from 'miniscript-languageserver-core/dist/helper/document-merger';
 
 export class NodeContext extends CoreContext {
   readonly connection: ReturnType<typeof createConnection>;
@@ -17,5 +16,9 @@ export class NodeContext extends CoreContext {
     this.documentMerger = new DocumentMerger();
     this.connection = createConnection(ProposedFeatures.all);
     this.fs = new FileSystem(this);
+  }
+
+  createSemanticTokensBuilder(): SemanticTokensBuilder {
+    return new SemanticTokensBuilder();
   }
 }

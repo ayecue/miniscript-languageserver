@@ -1,21 +1,31 @@
 # miniscript-languageserver
 
-Language server for MiniScript. Provides several features such as auto-completion, hover tooltips and more.
+[![miniscript-languageserver](https://circleci.com/gh/ayecue/miniscript-languageserver.svg?style=svg)](https://circleci.com/gh/ayecue/miniscript-languageserver)
 
-Should work with any other client which is following [LSP standards](https://code.visualstudio.com/api/language-extensions/language-server-extension-guide). Feel free to take a look at a full [implementation](https://github.com/ayecue/miniscript-vs) into VSCode.
+miniscript-languageserver` is a Language Server for MiniScript that offers a variety of features, including:
 
-## Supported providers
+- Auto-completion
+- Hover tooltips
+- Syntax highlighting and more
 
-It supports the following providers:
-- completion
-- hover
-- color
-- definition
-- formatter
-- signature help
-- document symbol
-- workspace symbol
-- diagnostic
+This language server is compatible with any client that follows the [LSP standards](https://code.visualstudio.com/api/language-extensions/language-server-extension-guide). 
+
+For an example of how it integrates with a popular editor, take a look at the [examples](#example-implementations).
+
+## Supported Providers
+
+`miniscript-languageserver` supports the following language server protocol (LSP) features:
+
+- **Completion**: Auto-completion suggestions for code.
+- **Hover**: Displays information about a symbol when you hover over it.
+- **Color**: Color information for syntax highlighting and theming.
+- **Definition**: Navigate to the definition of a symbol.
+- **Formatter**: Automatically format the code according to set rules.
+- **Signature Help**: Shows function or method signatures while typing.
+- **Document Symbol**: Lists all symbols in a document (e.g., functions, classes).
+- **Workspace Symbol**: Search for symbols across the workspace.
+- **Diagnostic**: Provides error, warning, and information diagnostics.
+- **Semantic Tokens**: Enhanced token classification for syntax highlighting and analysis.
 
 ## Install
 
@@ -28,9 +38,20 @@ npm install -g miniscript-languageserver
 miniscript-languageserver
 ```
 
-## Example implementations
+## Example Implementations
 
-#### VSCode implementation
+This section provides a collection of IDEs that implement the `miniscript-languageserver`.
+
+- [VSCode](#vscode): Visual Studio Code setup for `miniscript-languageserver`.
+- [Sublime Text](#sublime): Instructions for integrating with Sublime Text.
+- [IntelliJ](#intellij): Guide for using `miniscript-languageserver` with IntelliJ.
+- [Neovim (nvim)](#nvim): Configuration for Neovim users.
+
+Any other IDEs that follow the [LSP standards](https://code.visualstudio.com/api/language-extensions/language-server-extension-guide) should also work with `miniscript-languageserver`.
+
+#### VSCode
+
+1. Create language client file.
 ```ts
 import * as path from 'path';
 import {
@@ -67,8 +88,10 @@ client.registerProposedFeatures();
 client.start();
 ```
 
-#### Sublime implementation
-Install [LSP Package](https://lsp.sublimetext.io/) and create the following configuration:
+#### Sublime
+
+1. Install the [LSP Package](https://lsp.sublimetext.io/) from the Sublime Text Package Control.
+2. Create the following LSP client configuration in your Sublime settings:
 ```json
 {
   "show_diagnostics_panel_on_save": 0,
@@ -78,11 +101,12 @@ Install [LSP Package](https://lsp.sublimetext.io/) and create the following conf
       "command": ["miniscript-languageserver", "--stdio"],
       "selector": "source.miniscript"
     }
-  }
+  },
+  "semantic_highlighting": true
 }
 ```
 
-Example sublime syntax file (for testing)
+3. Create a Sublime syntax file for miniscript. The highlighting will be provided via the semantic provider, so there's no need to add additional patterns here. Use the following configuration:
 ```yaml
 %YAML 1.2
 ---
@@ -97,14 +121,77 @@ contexts:
       scope: text.miniscript
 ```
 
-## How to add tooltips
+#### IntelliJ
 
-You can add your own meta descriptions in [this repository](https://github.com/ayecue/miniscript-meta). The workflow for this is as follows:
-- create a PR with your changes in the [meta repository](https://github.com/ayecue/miniscript-meta)
-- create a PR with the raised version to this repository
+To set up `miniscript-languageserver` in IntelliJ, follow these steps:
 
-Additionally, there is the option to define methods via comments in the code.
+1. [Install miniscript-languageserver](#install).
+2. Install the `LSP4IJ` plugin from the JetBrains Plugin Marketplace.
+3. Go to **Languages & Frameworks > Language Servers**.
+4. Click the "+" icon to add a new language server configuration.
+5. In the **Name** field, enter `miniscript`.
+6. In the **Command** field, enter `miniscript-languageserver --stdio`.
+7. In the **Filename Patterns** section:
+   - Set **File Name Pattern** to `*.src`.
+   - Set **Language Id** to `miniscript`.
+8. Restart IntelliJ.
 
+You should now have `miniscript-languageserver` set up and ready to use with IntelliJ.
+
+
+#### nvim
+
+1. Add the following configuration to your `init.vim`:
+```vim
+" Install vim-plug if it's not already installed
+call plug#begin('~/.vim/plugged')
+
+" Install LSP config plugin
+Plug 'neovim/nvim-lspconfig'
+
+call plug#end()
+
+" LSP configuration for miniscript-languageserver
+lua <<EOF
+  local configs = require'lspconfig.configs'
+  local lspconfig = require'lspconfig'
+
+  -- Enable debug-level logging
+  vim.lsp.set_log_level("debug")
+
+  if not configs.miniscript then
+    configs.miniscript = {
+      default_config = {
+        cmd = { "miniscript-languageserver", "--stdio" },
+        filetypes = { "src" },
+        root_dir = lspconfig.util.root_pattern(".git", vim.fn.getcwd()),
+        settings = {},
+        on_attach = function(client, bufnr)           -- Optional on_attach function
+          -- Set up hover keybinding here
+          vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', { noremap = true, silent = true })
+        end,
+      },
+    }
+  end
+
+  -- Register and start the miniscript LSP
+  lspconfig.miniscript.setup{}
+EOF
+
+autocmd BufRead,BufNewFile *.src set filetype=src
+```
+2. Don't forget to run :PlugInstall to install the necessary plugins.
+
+This configuration ensures that miniscript-languageserver will be properly integrated into Neovim, and that .src files will be recognized with the correct syntax highlighting and LSP features.
+
+## How to Add Tooltips
+
+Tooltips in `miniscript-languageserver` can help provide additional context, such as method descriptions, to users. You can contribute your own tooltips by following this workflow:
+
+1. Fork and create a pull request (PR) with your changes to the [miniscript-meta repository](https://github.com/ayecue/miniscript-meta), where the meta descriptions are stored.
+2. Once your changes are merged, create a separate PR in this repository to update the version of `miniscript-languageserver` to include the new meta descriptions.
+
+Additionally, you can define method-specific tooltips directly in the code using comments. This allows for quick, tooltips for individual methods.
 ```js
 // @type Bar
 // @property {string} virtualMoo
