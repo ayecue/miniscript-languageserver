@@ -2,7 +2,7 @@
 
 [![miniscript-languageserver](https://circleci.com/gh/ayecue/miniscript-languageserver.svg?style=svg)](https://circleci.com/gh/ayecue/miniscript-languageserver)
 
-miniscript-languageserver` is a Language Server for MiniScript that offers a variety of features, including:
+`miniscript-languageserver` is a Language Server for MiniScript that offers a variety of features, including:
 
 - Auto-completion
 - Hover tooltips
