@@ -62,6 +62,7 @@ export interface IDocumentManager extends EventEmitter {
 }
 
 export interface IDocumentMerger {
+  flushCacheKey(documentUri: string): void;
   build(
     document: TextDocument,
     context: IContext
