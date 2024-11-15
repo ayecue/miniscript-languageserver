@@ -241,7 +241,7 @@ namespace MiniScript
         {
             var info = new ProcessStartInfo
             {
-                FileName = @"C:\Users\myUser\AppData\Roaming\npm\greybel-languageserver.cmd",
+                FileName = @"C:\Users\myUser\AppData\Roaming\npm\miniscript-languageserver.cmd",
                 Arguments = "--stdio",
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
