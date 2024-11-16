@@ -49,15 +49,16 @@ export function activate(context: IContext) {
       result.toString(),
       resultAlt.toString()
     );
-    const output: string[] = target == null ? [
-      'Cannot open file.'
-    ] : [
-      `[Inserts file "${path.basename(
-        target
-      )}" inside this code when building](${target.toString()})`,
-      '***',
-      'Click the link above to open the file.'
-    ];
+    const output: string[] =
+      target == null
+        ? ['Cannot open file.']
+        : [
+            `[Inserts file "${path.basename(
+              target
+            )}" inside this code when building](${target.toString()})`,
+            '***',
+            'Click the link above to open the file.'
+          ];
 
     hoverText.appendMarkdown(output.join('\n'));
 

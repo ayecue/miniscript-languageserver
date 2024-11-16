@@ -1,6 +1,5 @@
 import { SignatureDefinitionBaseType } from 'meta-utils';
 import {
-  ASTAssignmentStatement,
   ASTBase,
   ASTBaseBlockWithScope,
   ASTChunk,
@@ -9,19 +8,19 @@ import {
   ASTType
 } from 'miniscript-core';
 import {
+  ASTDefinitionItem,
   CompletionItem,
   CompletionItemKind,
   Document as TypeDocument,
   IEntity,
   injectIdentifers,
-  isValidIdentifierLiteral,
-  ASTDefinitionItem
+  isValidIdentifierLiteral
 } from 'miniscript-type-analyzer';
 import { Position, TextDocument } from 'vscode-languageserver-textdocument';
 
-import { IActiveDocument, IContext } from '../types';
+import { IContext } from '../types';
 import * as ASTScraper from './ast-scraper';
-import typeManager, { lookupBase } from './type-manager';
+import { lookupBase } from './ast-utils';
 
 export type LookupOuter = ASTBase[];
 
@@ -45,7 +44,10 @@ export class LookupHelper {
 
   async getTypeMap(): Promise<TypeDocument> {
     if (this.mergedTypeMap == null) {
-      this.mergedTypeMap = await this.context.documentMerger.build(this.document, this.context);
+      this.mergedTypeMap = await this.context.documentMerger.build(
+        this.document,
+        this.context
+      );
     }
     return this.mergedTypeMap;
   }
@@ -66,8 +68,7 @@ export class LookupHelper {
       return [];
     }
 
-    return context
-      .aggregator.resolveAvailableAssignmentsWithQuery(identifier);
+    return context.aggregator.resolveAvailableAssignmentsWithQuery(identifier);
   }
 
   async findAllAssignmentsOfItem(
@@ -86,20 +87,19 @@ export class LookupHelper {
       return [];
     }
 
-    return context
-      .aggregator.resolveAvailableAssignments(item);
+    return context.aggregator.resolveAvailableAssignments(item);
   }
 
-  async findAllAvailableIdentifierInRoot(): Promise<Map<string, CompletionItem>> {
+  async findAllAvailableIdentifierInRoot(): Promise<
+    Map<string, CompletionItem>
+  > {
     const typeDoc = await this.getTypeMap();
 
     if (typeDoc == null) {
       return new Map();
     }
 
-    return typeDoc
-      .getRootScopeContext()
-      .scope.getAllIdentifier();
+    return typeDoc.getRootScopeContext().scope.getAllIdentifier();
   }
 
   async findAllAvailableIdentifier(
