@@ -35,7 +35,7 @@ suite('DocumentSymbolProvider', () => {
 
   suite('invalid code', () => {
     test('should provide locations', async () => {
-      const documentUri = getDocUri('invalid-chunk.src');
+      const documentUri = getDocUri('invalid-chunk.ms');
       const result = await executeDocumentSymbolProvider(documentUri);
 
       assert.strictEqual(result.length, 2);
