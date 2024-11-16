@@ -14,7 +14,7 @@ import { IContext } from '../types';
 
 const definitionLinkToString = (link: DefinitionLink): string => {
   return `${link.targetUri}:${link.targetRange.start.line}:${link.targetRange.start.character}-${link.targetRange.end.line}:${link.targetRange.end.character}`;
-}
+};
 
 const findAllDefinitions = async (
   helper: LookupHelper,

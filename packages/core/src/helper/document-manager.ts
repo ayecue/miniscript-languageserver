@@ -28,7 +28,9 @@ export class DocumentURIBuilder {
 
   getFromWorkspaceFolder(path: string): string {
     if (this.workspaceFolderUri == null) {
-      console.warn('Workspace folders are not available. Falling back to only relative paths.');
+      console.warn(
+        'Workspace folders are not available. Falling back to only relative paths.'
+      );
       return Utils.joinPath(this.rootPath, path).toString();
     }
 
@@ -61,7 +63,9 @@ export class ActiveDocument implements IActiveDocument {
     return Utils.joinPath(URI.parse(this.textDocument.uri), '..');
   }
 
-  private async getImportsAndIncludes(workspaceFolderUri: URI = null): Promise<string[]> {
+  private async getImportsAndIncludes(
+    workspaceFolderUri: URI = null
+  ): Promise<string[]> {
     if (this.document == null) {
       return [];
     }
@@ -108,7 +112,8 @@ export class ActiveDocument implements IActiveDocument {
       await this.documentManager.context.fs.getWorkspaceFolderUri(
         URI.parse(this.textDocument.uri)
       );
-    const importsAndIncludes = await this.getImportsAndIncludes(workspacePathUri);
+    const importsAndIncludes =
+      await this.getImportsAndIncludes(workspacePathUri);
     const dependencies: Set<string> = new Set([...importsAndIncludes]);
 
     this.dependencies = Array.from(dependencies);
