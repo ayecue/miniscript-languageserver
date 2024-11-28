@@ -6,6 +6,7 @@ import fs from "fs";
 
 import { IContext, IFileSystem, LanguageId } from "miniscript-languageserver-core";
 import LRUCache from "lru-cache";
+import { glob } from "glob";
 
 export class FileSystem extends EventEmitter implements IFileSystem {
   private _context: IContext;
@@ -37,6 +38,19 @@ export class FileSystem extends EventEmitter implements IFileSystem {
   async getWorkspaceFolderUri(source: URI): Promise<URI | null> {
     const uris = await this.getWorkspaceFolderUris();
     return uris.find(folderUri => source.path.startsWith(folderUri.path)) || null;
+  }
+
+  async getWorkspaceRelatedFiles(): Promise<URI[]> {
+    const configuration = this._context.getConfiguration();
+    const fileExtensions = configuration.fileExtensions;
+    const exclude = configuration.typeAnalyzer.exclude;
+    const folderUris = await this.getWorkspaceFolderUris();
+    const filePaths: string[][] = await Promise.all(folderUris.flatMap(async (folderUri) => {
+      return glob(fileExtensions.map((ext) => {
+        return `**/*.${ext}`;
+      }), { cwd: folderUri.fsPath, absolute: true, ignore: exclude });
+    }));
+    return filePaths.flat().map((it) => URI.file(it));
   }
 
   async findExistingPath(...uris: string[]): Promise<string | null> {
