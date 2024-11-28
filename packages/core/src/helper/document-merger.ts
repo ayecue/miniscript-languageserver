@@ -207,6 +207,7 @@ export class DocumentMerger implements IDocumentMerger {
 
     this.registerCacheKey(cacheKey, documentUri);
 
+    const documentUris = allDocuments.map((item) => item.textDocument.uri);
     // sort by it's usage
     const documentGraph: [string, string][][] = await Promise.all(
       allDocuments.map(async (item) => {
@@ -217,7 +218,7 @@ export class DocumentMerger implements IDocumentMerger {
         });
       })
     );
-    const topoSorted = toposort(documentGraph.flat());
+    const topoSorted = toposort.array(documentUris, documentGraph.flat());
 
     for (let index = topoSorted.length - 1; index >= 0; index--) {
       const itemUri = topoSorted[index];
