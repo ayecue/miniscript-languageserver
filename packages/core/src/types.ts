@@ -15,13 +15,20 @@ export type LanguageId = 'miniscript';
 export const LanguageId: LanguageId = 'miniscript';
 export type ConfigurationNamespace = 'miniscript';
 export const ConfigurationNamespace: ConfigurationNamespace = 'miniscript';
+export const DefaultFileExtensions: string[] = ['ms'];
 
 export enum IndentationType {
   Tab = 'Tab',
   Whitespace = 'Whitespace'
 }
 
-export interface IConfiguration {
+export enum TypeAnalyzerStrategy {
+  Dependency = 'Dependency',
+  Workspace = 'Workspace'
+}
+
+export interface IConfigurationRequest {
+  fileExtensions: string;
   formatter: boolean;
   autocomplete: boolean;
   hoverdocs: boolean;
@@ -32,6 +39,29 @@ export interface IConfiguration {
       indentation: IndentationType;
       indentationSpaces: number;
     };
+  };
+  typeAnalyzer: {
+    strategy: TypeAnalyzerStrategy;
+    exclude: string;
+  };
+}
+
+export interface IConfiguration {
+  fileExtensions: string[];
+  formatter: boolean;
+  autocomplete: boolean;
+  hoverdocs: boolean;
+  diagnostic: boolean;
+  transpiler: {
+    beautify: {
+      keepParentheses: boolean;
+      indentation: IndentationType;
+      indentationSpaces: number;
+    };
+  };
+  typeAnalyzer: {
+    strategy: TypeAnalyzerStrategy;
+    exclude: string;
   };
 }
 
@@ -63,6 +93,7 @@ export interface IDocumentManager extends EventEmitter {
 
 export interface IDocumentMerger {
   flushCacheKey(documentUri: string): void;
+  flushCache(): void;
   build(
     document: TextDocument,
     context: IContext
@@ -85,6 +116,7 @@ export interface IContext extends EventEmitter {
 export interface IFileSystem extends EventEmitter {
   getWorkspaceFolderUris(): Promise<URI[]>;
   getWorkspaceFolderUri(source: URI): Promise<URI | null>;
+  getWorkspaceFileUris(pattern: string, exclude?: string): Promise<URI[]>;
   getAllTextDocuments(): TextDocument[];
   findExistingPath(...uris: string[]): Promise<string | null>;
   fetchTextDocument(targetUri: string): Promise<TextDocument | null>;
