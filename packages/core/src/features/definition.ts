@@ -1,8 +1,11 @@
 import {
   ASTBase,
   ASTBaseBlockWithScope,
-  ASTMemberExpression
+  ASTMemberExpression,
+  ASTForGenericStatement,
+  ASTType
 } from 'miniscript-core';
+import { ASTDefinitionItem } from 'miniscript-type-analyzer';
 import type {
   DefinitionLink,
   DefinitionParams,
@@ -14,6 +17,41 @@ import { IContext } from '../types';
 
 const definitionLinkToString = (link: DefinitionLink): string => {
   return `${link.targetUri}:${link.targetRange.start.line}:${link.targetRange.start.character}-${link.targetRange.end.line}:${link.targetRange.end.character}`;
+};
+
+const getLocation = (item: ASTDefinitionItem): DefinitionLink => {
+  const node = item.node;
+  let start: Position;
+  let end: Position;
+  switch (node.type) {
+    case ASTType.ForGenericStatement: {
+      const stmt = node as ASTForGenericStatement;
+      start = {
+        line: stmt.variable.start.line - 1,
+        character: stmt.variable.start.character - 1
+      };
+      end = {
+        line: stmt.variable.end.line - 1,
+        character: stmt.variable.end.character - 1
+      };
+      break;
+    }
+    default: {
+      start = {
+        line: node.start.line - 1,
+        character: node.start.character - 1
+      };
+      end = {
+        line: node.end.line - 1,
+        character: node.end.character - 1
+      };
+    }
+  }
+  return {
+    targetUri: item.source,
+    targetRange: { start, end },
+    targetSelectionRange: { start, end }
+  };
 };
 
 const findAllDefinitions = async (
@@ -32,19 +70,7 @@ const findAllDefinitions = async (
       continue;
     }
 
-    const start: Position = {
-      line: node.start.line - 1,
-      character: node.start.character - 1
-    };
-    const end: Position = {
-      line: node.end.line - 1,
-      character: node.end.character - 1
-    };
-    const definitionLink: DefinitionLink = {
-      targetUri: assignment.source,
-      targetRange: { start, end },
-      targetSelectionRange: { start, end }
-    };
+    const definitionLink = getLocation(assignment);
     const linkString = definitionLinkToString(definitionLink);
 
     if (visited.has(linkString)) {

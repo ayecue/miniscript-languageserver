@@ -4,7 +4,8 @@ import type { CompletionItem } from 'vscode-languageserver';
 import { getCompletionItemKind } from './kind';
 export class CompletionListBuilder {
   private default: CompletionItem[];
-  private collection: ReturnType<IEntity['getAllIdentifier']>;
+  private collection: ReturnType<IEntity['getAvailableIdentifier']>;
+
   constructor() {
     this.collection = new Map();
     this.default = [];
@@ -14,7 +15,7 @@ export class CompletionListBuilder {
     this.default = items;
   }
 
-  addCollection(collection: ReturnType<IEntity['getAllIdentifier']> | null) {
+  addCollection(collection: ReturnType<IEntity['getAvailableIdentifier']> | null) {
     if (collection == null) return;
     this.collection = new Map([...this.collection, ...collection]);
   }

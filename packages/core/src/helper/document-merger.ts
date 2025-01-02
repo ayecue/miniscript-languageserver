@@ -4,6 +4,7 @@ import toposort from 'toposort';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 import {
+  DependencyType,
   IActiveDocument,
   IContext,
   IDocumentMerger,
@@ -79,7 +80,7 @@ export class DocumentMerger implements IDocumentMerger {
 
     const externalTypeDocs: TypeDocument[] = [];
     const allImports = await context.documentManager.get(document).getImports();
-    const cacheKey = this.createCacheKey(document, allImports);
+    const cacheKey = this.createCacheKey(document, allImports.map((dep) => dep.document));
 
     if (this.results.has(cacheKey)) {
       return this.results.get(cacheKey);
@@ -87,13 +88,13 @@ export class DocumentMerger implements IDocumentMerger {
 
     this.registerCacheKey(cacheKey, documentUri);
 
-    const importUris = await context.documentManager
+    const dependencies = await context.documentManager
       .get(document)
       .getDependencies();
 
     await Promise.all(
-      importUris.map(async (itemUri) => {
-        const item = context.documentManager.results.get(itemUri);
+      dependencies.map(async (dep) => {
+        const item = context.documentManager.results.get(dep.location);
 
         if (!item) {
           return;
@@ -133,17 +134,22 @@ export class DocumentMerger implements IDocumentMerger {
       return null;
     }
 
-    const externalTypeDocs: TypeDocument[] = [];
     const allImports = await context.documentManager.get(document).getImports();
-    const cacheKey = this.createCacheKey(document, allImports);
+    const cacheKey = this.createCacheKey(document, allImports.map((dep) => dep.document));
 
     if (this.results.has(cacheKey)) {
       return this.results.get(cacheKey);
     }
 
+    const externalTypeDocs: TypeDocument[] = [];
+    const importsWithNamespace: {
+      namespace: string;
+      typeDoc: TypeDocument;
+    }[] = [];
+
     this.registerCacheKey(cacheKey, documentUri);
 
-    const importUris = await context.documentManager
+    const dependencies = await context.documentManager
       .get(document)
       .getDependencies();
     const refs: Map<string, TypeDocument | null> = new Map([
@@ -151,8 +157,8 @@ export class DocumentMerger implements IDocumentMerger {
     ]);
 
     await Promise.all(
-      importUris.map(async (itemUri) => {
-        const item = context.documentManager.results.get(itemUri);
+      dependencies.map(async (dep) => {
+        const item = context.documentManager.results.get(dep.location);
 
         if (!item) {
           return;
@@ -171,11 +177,30 @@ export class DocumentMerger implements IDocumentMerger {
         );
 
         if (itemTypeDoc === null) return;
+        if (dep.type === DependencyType.Import) {
+          importsWithNamespace.push({
+            namespace: dep.args[0],
+            typeDoc: itemTypeDoc
+          });
+          return;
+        }
         externalTypeDocs.push(itemTypeDoc);
       })
     );
 
     const mergedTypeDoc = typeDoc.merge(...externalTypeDocs);
+
+    importsWithNamespace.forEach((item, index) => {
+      const entity = item.typeDoc
+        .getRootScopeContext()
+        .scope.resolveNamespace('module', true)
+        ?.resolveProperty('exports', true);
+      if (entity == null) return;
+      mergedTypeDoc
+        .getRootScopeContext()
+        .scope.setProperty(item.namespace ?? `unknown${index}`, entity, true);
+    });
+
     this.results.set(cacheKey, mergedTypeDoc);
     return mergedTypeDoc;
   }
@@ -211,10 +236,10 @@ export class DocumentMerger implements IDocumentMerger {
     // sort by it's usage
     const documentGraph: [string, string][][] = await Promise.all(
       allDocuments.map(async (item) => {
-        const depUris = await item.getDependencies();
+        const deps = await item.getDependencies();
 
-        return depUris.map((depUri) => {
-          return [item.textDocument.uri, depUri];
+        return deps.map((dep) => {
+          return [item.textDocument.uri, dep.location];
         });
       })
     );

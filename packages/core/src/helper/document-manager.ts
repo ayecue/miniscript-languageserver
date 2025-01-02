@@ -1,12 +1,22 @@
 import EventEmitter from 'events';
-import { ASTChunkAdvanced, Parser } from 'greybel-core';
+import { ASTChunkGreybel, Parser } from 'greybel-core';
 import LRU from 'lru-cache';
-import { ASTBaseBlockWithScope } from 'miniscript-core';
+import { ASTBaseBlockWithScope, ASTChunkOptions, ASTIdentifier } from 'miniscript-core';
 import { schedule } from 'non-blocking-schedule';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI, Utils } from 'vscode-uri';
 
-import { IActiveDocument, IContext, IDocumentManager } from '../types';
+import {
+  DependencyRawLocation,
+  DependencyType,
+  IActiveDocument,
+  IActiveDocumentImport,
+  IContext,
+  IDependencyLocation,
+  IDocumentManager,
+  parseDependencyLocation,
+  parseDependencyRawLocation
+} from '../types';
 import typeManager from './type-manager';
 
 export interface ActiveDocumentOptions {
@@ -40,6 +50,19 @@ export class DocumentURIBuilder {
   getFromRootPath(path: string): string {
     return Utils.joinPath(this.rootPath, path).toString();
   }
+
+  async getPathWithContext(path: string, context: IContext): Promise<string> {
+    if (path.startsWith('/')) {
+      return context.fs.findExistingPath(
+        this.getFromWorkspaceFolder(path),
+        this.getFromWorkspaceFolder(`${path}.src`)
+      );
+    }
+    return context.fs.findExistingPath(
+      this.getFromRootPath(path),
+      this.getFromRootPath(`${path}.src`)
+    );
+  }
 }
 
 export class ActiveDocument implements IActiveDocument {
@@ -49,7 +72,7 @@ export class ActiveDocument implements IActiveDocument {
   document: ASTBaseBlockWithScope | null;
   errors: Error[];
 
-  private dependencies?: string[];
+  private dependencies?: IDependencyLocation[];
 
   constructor(options: ActiveDocumentOptions) {
     this.documentManager = options.documentManager;
@@ -63,43 +86,78 @@ export class ActiveDocument implements IActiveDocument {
     return Utils.joinPath(URI.parse(this.textDocument.uri), '..');
   }
 
-  private async getImportsAndIncludes(
+  async getImportUris(
     workspaceFolderUri: URI = null
-  ): Promise<string[]> {
+  ): Promise<DependencyRawLocation[]> {
     if (this.document == null) {
       return [];
     }
 
-    const rootChunk = this.document as ASTChunkAdvanced;
+    const rootChunk = this.document as ASTChunkGreybel;
     const rootPath = this.getDirectory();
     const context = this.documentManager.context;
     const builder = new DocumentURIBuilder(rootPath, workspaceFolderUri);
-    const getPath = (path: string): Promise<string | null> => {
-      if (path.startsWith('/')) {
-        return context.fs.findExistingPath(
-          builder.getFromWorkspaceFolder(path),
-          builder.getFromWorkspaceFolder(`${path}.src`)
-        );
-      }
-      return context.fs.findExistingPath(
-        builder.getFromRootPath(path),
-        builder.getFromRootPath(`${path}.src`)
-      );
-    };
 
     const paths = await Promise.all([
       ...rootChunk.imports
         .filter((nonNativeImport) => nonNativeImport.path)
-        .map((nonNativeImport) => getPath(nonNativeImport.path)),
-      ...rootChunk.includes
-        .filter((includeImport) => includeImport.path)
-        .map((includeImport) => getPath(includeImport.path))
+        .map(async (nonNativeImport) => {
+          const path = await builder.getPathWithContext(
+            nonNativeImport.path,
+            context
+          );
+
+          if (path == null) {
+            return null;
+          }
+
+          return parseDependencyLocation({
+            type: DependencyType.Import,
+            location: path,
+            args: [(nonNativeImport.name as ASTIdentifier)?.name]
+          });
+        })
     ]);
 
     return paths.filter((path) => path != null);
   }
 
-  async getDependencies(): Promise<string[]> {
+  async getIncludeUris(
+    workspaceFolderUri: URI = null
+  ): Promise<DependencyRawLocation[]> {
+    if (this.document == null) {
+      return [];
+    }
+
+    const rootChunk = this.document as ASTChunkGreybel;
+    const rootPath = this.getDirectory();
+    const context = this.documentManager.context;
+    const builder = new DocumentURIBuilder(rootPath, workspaceFolderUri);
+
+    const paths = await Promise.all([
+      ...rootChunk.includes
+        .filter((includeImport) => includeImport.path)
+        .map(async (includeImport) => {
+          const path = await builder.getPathWithContext(
+            includeImport.path,
+            context
+          );
+
+          if (path == null) {
+            return null;
+          }
+
+          return parseDependencyLocation({
+            type: DependencyType.Include,
+            location: path
+          });
+        })
+    ]);
+
+    return paths.filter((path) => path != null);
+  }
+
+  async getDependencies(): Promise<IDependencyLocation[]> {
     if (this.document == null) {
       return [];
     }
@@ -112,35 +170,45 @@ export class ActiveDocument implements IActiveDocument {
       await this.documentManager.context.fs.getWorkspaceFolderUri(
         URI.parse(this.textDocument.uri)
       );
-    const importsAndIncludes =
-      await this.getImportsAndIncludes(workspacePathUri);
-    const dependencies: Set<string> = new Set([...importsAndIncludes]);
+    const [imports, includes] = await Promise.all([
+      this.getImportUris(workspacePathUri),
+      this.getIncludeUris(workspacePathUri)
+    ]);
+    const dependencies: Set<string> = new Set([
+      ...imports,
+      ...includes
+    ]);
 
-    this.dependencies = Array.from(dependencies);
+    this.dependencies = Array.from(dependencies).map(
+      parseDependencyRawLocation
+    );
 
     return this.dependencies;
   }
 
-  async getImports(nested: boolean = true): Promise<ActiveDocument[]> {
+  async getImports(nested: boolean = true): Promise<IActiveDocumentImport[]> {
     if (this.document == null) {
       return [];
     }
 
-    const imports: Set<ActiveDocument> = new Set();
+    const imports: Set<IActiveDocumentImport> = new Set();
     const visited: Set<string> = new Set([this.textDocument.uri]);
     const traverse = async (rootResult: ActiveDocument) => {
       const dependencies = await rootResult.getDependencies();
 
       for (const dependency of dependencies) {
-        if (visited.has(dependency)) continue;
+        if (visited.has(dependency.location)) continue;
 
-        const item = await this.documentManager.open(dependency);
+        const item = await this.documentManager.open(dependency.location);
 
-        visited.add(dependency);
+        visited.add(dependency.location);
 
         if (item === null) continue;
 
-        imports.add(item);
+        imports.add({
+          document: item,
+          location: dependency
+        });
 
         if (item.document !== null && nested) {
           await traverse(item);
@@ -233,7 +301,7 @@ export class DocumentManager extends EventEmitter implements IDocumentManager {
     const parser = new Parser(content, {
       unsafe: true
     });
-    const chunk = parser.parseChunk() as ASTChunkAdvanced;
+    const chunk = parser.parseChunk() as ASTChunkGreybel;
 
     this._context.documentMerger.flushCacheKey(document.uri);
     typeManager.analyze(document.uri, chunk);
