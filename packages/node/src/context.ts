@@ -1,6 +1,6 @@
 import { createConnection, ProposedFeatures, SemanticTokensBuilder } from 'vscode-languageserver/node';
 
-import { CoreContext, DocumentManager, DocumentMerger } from 'miniscript-languageserver-core';
+import { CoreContext, DocumentManager, DocumentMerger } from 'miniscript-languageserver-core'
 import { FileSystem } from './fs';
 
 export class NodeContext extends CoreContext {
