@@ -186,7 +186,7 @@ lua <<EOF
     configs.miniscript = {
       default_config = {
         cmd = { "miniscript-languageserver", "--stdio" },
-        filetypes = { "src" },
+        filetypes = { "miniscript" },
         root_dir = lspconfig.util.root_pattern(".git", vim.fn.getcwd()),
         settings = {},
         on_attach = function(client, bufnr)           -- Optional on_attach function
@@ -201,7 +201,7 @@ lua <<EOF
   lspconfig.miniscript.setup{}
 EOF
 
-autocmd BufRead,BufNewFile *.src set filetype=src
+autocmd BufRead,BufNewFile *.src set filetype=miniscript
 ```
 2. Don't forget to run :PlugInstall to install the necessary plugins.
 
