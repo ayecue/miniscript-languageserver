@@ -15,22 +15,7 @@ import { LookupASTResult, LookupHelper } from '../helper/lookup-type';
 import { MarkdownString } from '../helper/markdown-string';
 import { createHover, formatKind, formatTypes } from '../helper/tooltip';
 import { IContext, LanguageId } from '../types';
-
-const getRootDirectory = async (
-  context: IContext,
-  textDocument: TextDocument,
-  target: string
-) => {
-  const textDocumentUri = URI.parse(textDocument.uri);
-  const workspaceFolderUri =
-    await context.fs.getWorkspaceFolderUri(textDocumentUri);
-  if (workspaceFolderUri == null) {
-    return Utils.joinPath(textDocumentUri, '..');
-  }
-  return target.startsWith('/')
-    ? workspaceFolderUri
-    : Utils.joinPath(textDocumentUri, '..');
-};
+import { DocumentURIBuilder } from '../helper/document-manager';
 
 export function activate(context: IContext) {
   async function generateImportHover(
@@ -42,12 +27,13 @@ export function activate(context: IContext) {
     const importCodeAst = astResult.closest as ASTFeatureImportExpression;
     const fileDir = importCodeAst.path;
 
-    const rootDir = await getRootDirectory(context, textDocument, fileDir);
-    const result = Utils.joinPath(rootDir, fileDir);
-    const resultAlt = Utils.joinPath(rootDir, `${fileDir}`);
-    const target = await context.fs.findExistingPath(
-      result.toString(),
-      resultAlt.toString()
+    const documentUriBuilder = await DocumentURIBuilder.fromTextDocument(
+      textDocument,
+      context
+    );
+    const target = await documentUriBuilder.getPathWithContext(
+      fileDir,
+      context
     );
     const output: string[] =
       target == null
