@@ -1,6 +1,6 @@
 {
   "name": "miniscript-languageserver-core",
-  "version": "1.10.0",
+  "version": "2.0.0",
   "description": "Core functionality of language server for MiniScript",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
@@ -63,11 +63,11 @@
     "greybel-core": ">=2.5.2",
     "greybel-transpiler": ">=3.6.3",
     "miniscript-meta": ">=1.4.0",
-    "miniscript-type-analyzer": ">=0.21.0"
+    "greybel-type-analyzer": "~1.0.8"
   },
   "dependencies": {
     "color-convert": "^2.0.1",
-    "lru-cache": "^7.18.3",
+    "lru-cache": "^11.1.0",
     "non-blocking-schedule": "^0.2.0",
     "fast-toposort": "^0.1.1",
     "vscode-languageserver": "^9.0.1",

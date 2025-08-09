@@ -1,11 +1,10 @@
+import { TypeSource } from 'greybel-type-analyzer';
 import {
   ASTBase,
-  ASTBaseBlockWithScope,
   ASTMemberExpression,
   ASTForGenericStatement,
   ASTType
 } from 'miniscript-core';
-import { ASTDefinitionItem } from 'miniscript-type-analyzer';
 import type {
   DefinitionLink,
   DefinitionParams,
@@ -19,8 +18,8 @@ const definitionLinkToString = (link: DefinitionLink): string => {
   return `${link.targetUri}:${link.targetRange.start.line}:${link.targetRange.start.character}-${link.targetRange.end.line}:${link.targetRange.end.character}`;
 };
 
-const getLocation = (item: ASTDefinitionItem): DefinitionLink => {
-  const node = item.node;
+const getLocation = (item: TypeSource): DefinitionLink => {
+  const node = item.astRef;
   let start: Position;
   let end: Position;
   switch (node.type) {
@@ -48,7 +47,7 @@ const getLocation = (item: ASTDefinitionItem): DefinitionLink => {
     }
   }
   return {
-    targetUri: item.source,
+    targetUri: item.document,
     targetRange: { start, end },
     targetSelectionRange: { start, end }
   };
@@ -56,21 +55,26 @@ const getLocation = (item: ASTDefinitionItem): DefinitionLink => {
 
 const findAllDefinitions = async (
   helper: LookupHelper,
-  item: ASTBase,
-  root: ASTBaseBlockWithScope
+  item: ASTBase
 ): Promise<DefinitionLink[]> => {
-  const assignments = await helper.findAllAssignmentsOfItem(item, root);
+  const result = await helper.findAllAssignmentsOfItem(item);
+  const sources = result?.getSource();
+
+  if (sources == null || sources.length === 0) {
+    return [];
+  }
+
   const definitions: DefinitionLink[] = [];
   const visited = new Set<string>();
 
-  for (const assignment of assignments) {
-    const node = assignment.node;
+  for (const source of sources) {
+    const node = source.astRef;
 
     if (!node.start || !node.end) {
       continue;
     }
 
-    const definitionLink = getLocation(assignment);
+    const definitionLink = getLocation(source);
     const linkString = definitionLinkToString(definitionLink);
 
     if (visited.has(linkString)) {
@@ -92,7 +96,8 @@ export function activate(context: IContext) {
       return;
     }
 
-    const helper = new LookupHelper(document, context);
+    const activeDocument = await context.documentManager.getLatest(document);
+    const helper = new LookupHelper(activeDocument, context);
     const astResult = await helper.lookupAST(params.position);
 
     if (!astResult) {
@@ -113,6 +118,6 @@ export function activate(context: IContext) {
       }
     }
 
-    return await findAllDefinitions(helper, target, target.scope!);
+    return await findAllDefinitions(helper, target);
   });
 }
