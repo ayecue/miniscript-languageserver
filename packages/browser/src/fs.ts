@@ -2,7 +2,7 @@ import { createConnection, TextDocumentChangeEvent, TextDocuments } from "vscode
 import { TextDocument } from "vscode-languageserver-textdocument";
 import EventEmitter from "events";
 import { URI } from "vscode-uri";
-import LRUCache from "lru-cache";
+import { LRUCache } from "lru-cache";
 
 import { IContext, IFileSystem, LanguageId } from "miniscript-languageserver-core";
 
@@ -15,11 +15,12 @@ export class FileSystem extends EventEmitter implements IFileSystem {
   private _context: IContext;
   private _tempTextDocumentCache: LRUCache<string, TextDocument>;
   private _textDocumentManager: TextDocuments<TextDocument>;
-  private _workspace: ReturnType<typeof createConnection>['workspace'];
+  private _connection: ReturnType<typeof createConnection> | null;
 
   constructor(context: IContext) {
     super();
 
+    this._connection = null;
     this._context = context;
     this._textDocumentManager = new TextDocuments(
       TextDocument
@@ -32,10 +33,11 @@ export class FileSystem extends EventEmitter implements IFileSystem {
 
   async getWorkspaceFolderUris(): Promise<URI[]> {
     if (!this._context.features.workspaceFolder) return [];
-    if (this._workspace == null) return [];
-    const result = await this._workspace.getWorkspaceFolders();
+    const result = await this._connection?.workspace?.getWorkspaceFolders();
     if (result == null) return [];
-    return Array.from(new Set(result.map((it) => it.uri))).map((it) => URI.parse(it));
+    return Array.from(new Set(result.map((it) => it.uri))).map((it) =>
+      URI.parse(it)
+    );
   }
 
   async getWorkspaceFolderUri(source: URI): Promise<URI | null> {
@@ -122,6 +124,9 @@ export class FileSystem extends EventEmitter implements IFileSystem {
 
     if (content != null) {
       tempDoc = TextDocument.create(targetUri, LanguageId, 0, content);
+      this._connection?.sendNotification('textDocument/didOpen', {
+        textDocument: tempDoc
+      });
     }
 
     this._tempTextDocumentCache.set(targetUri, tempDoc);
@@ -143,7 +148,7 @@ export class FileSystem extends EventEmitter implements IFileSystem {
   }
 
   listen(connection: ReturnType<typeof createConnection>) {
-    this._workspace = connection.workspace;
+    this._connection = connection;
     this._textDocumentManager.listen(connection);
     this._textDocumentManager.onDidOpen(
       (event: TextDocumentChangeEvent<TextDocument>) => {
