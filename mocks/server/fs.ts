@@ -7,7 +7,7 @@ import fs from "fs";
 import { glob } from "glob";
 
 import { IContext, IFileSystem, LanguageId } from '../../packages/core/src';
-import LRUCache from "lru-cache";
+import { LRUCache } from "lru-cache";
 
 export class FileSystem extends EventEmitter implements IFileSystem {
   private _context: IContext;

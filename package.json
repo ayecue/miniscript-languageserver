@@ -32,7 +32,7 @@
     "greybel-core": ">=2.5.2",
     "greybel-transpiler": ">=3.6.3",
     "jest": "^27.4.5",
-    "lru-cache": "^7.18.3",
+    "lru-cache": "^11.1.0",
     "miniscript-meta": ">=1.4.0",
     "greybel-type-analyzer": "~1.0.8",
     "fast-toposort": "^0.1.1",
