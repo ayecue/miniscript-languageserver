@@ -1,6 +1,6 @@
 {
   "name": "miniscript-languageserver-core",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Core functionality of language server for MiniScript",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
@@ -63,7 +63,7 @@
     "greybel-core": ">=2.5.2",
     "greybel-transpiler": ">=3.6.3",
     "miniscript-meta": ">=1.4.0",
-    "greybel-type-analyzer": "~1.0.8"
+    "greybel-type-analyzer": ">=1.0.9"
   },
   "dependencies": {
     "color-convert": "^2.0.1",
