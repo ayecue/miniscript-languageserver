@@ -1,62 +1,64 @@
 import { TypeSource } from 'greybel-type-analyzer';
 import {
   ASTBase,
-  ASTMemberExpression,
+  ASTBaseBlockWithScope,
   ASTForGenericStatement,
+  ASTMemberExpression,
   ASTType
 } from 'miniscript-core';
 import type {
-  DefinitionLink,
   DefinitionParams,
+  Location,
   Position
 } from 'vscode-languageserver';
 
 import { LookupHelper } from '../helper/lookup-type';
 import { IContext } from '../types';
 
-const definitionLinkToString = (link: DefinitionLink): string => {
-  return `${link.targetUri}:${link.targetRange.start.line}:${link.targetRange.start.character}-${link.targetRange.end.line}:${link.targetRange.end.character}`;
+const definitionLinkToString = (link: Location): string => {
+  return `${link.uri}:${link.range.start.line}:${link.range.start.character}-${link.range.end.line}:${link.range.end.character}`;
 };
 
-const getLocation = (item: TypeSource): DefinitionLink => {
+const getLocation = (item: TypeSource): Location => {
   const node = item.astRef;
   let start: Position;
   let end: Position;
+
   switch (node.type) {
     case ASTType.ForGenericStatement: {
       const stmt = node as ASTForGenericStatement;
       start = {
-        line: stmt.variable.start.line - 1,
-        character: stmt.variable.start.character - 1
+        line: stmt.variable.startLine - 1,
+        character: stmt.variable.startChar - 1
       };
       end = {
-        line: stmt.variable.end.line - 1,
-        character: stmt.variable.end.character - 1
+        line: stmt.variable.endLine - 1,
+        character: stmt.variable.endChar - 1
       };
       break;
     }
     default: {
       start = {
-        line: node.start.line - 1,
-        character: node.start.character - 1
+        line: node.startLine - 1,
+        character: node.startChar - 1
       };
       end = {
-        line: node.end.line - 1,
-        character: node.end.character - 1
+        line: node.endLine - 1,
+        character: node.endChar - 1
       };
     }
   }
+
   return {
-    targetUri: item.document,
-    targetRange: { start, end },
-    targetSelectionRange: { start, end }
+    uri: item.document,
+    range: { start, end }
   };
 };
 
 const findAllDefinitions = async (
   helper: LookupHelper,
   item: ASTBase
-): Promise<DefinitionLink[]> => {
+): Promise<Location[]> => {
   const result = await helper.findAllAssignmentsOfItem(item);
   const sources = result?.getSource();
 
@@ -64,17 +66,17 @@ const findAllDefinitions = async (
     return [];
   }
 
-  const definitions: DefinitionLink[] = [];
+  const definitions: Location[] = [];
   const visited = new Set<string>();
 
   for (const source of sources) {
     const node = source.astRef;
 
-    if (!node.start || !node.end) {
+    if (node == null) {
       continue;
     }
 
-    const definitionLink = getLocation(source);
+    const definitionLink: Location = getLocation(source);
     const linkString = definitionLinkToString(definitionLink);
 
     if (visited.has(linkString)) {
