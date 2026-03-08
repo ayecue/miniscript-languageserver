@@ -71,7 +71,7 @@
     "lru-cache": "^11.1.0",
     "greybel-core": "~3.0.0",
     "greybel-transpiler": "~4.0.0",
-    "miniscript-languageserver-core": "~3.0.1",
+    "miniscript-languageserver-core": "~3.0.2",
     "miniscript-meta": "~1.4.0",
     "greybel-type-analyzer": "~2.0.0"
   }
