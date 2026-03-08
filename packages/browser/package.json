@@ -69,6 +69,6 @@
     "miniscript-meta": "~1.4.0",
     "greybel-transpiler": "~4.0.0",
     "greybel-type-analyzer": "~2.0.0",
-    "miniscript-languageserver-core": "~3.0.0"
+    "miniscript-languageserver-core": "~3.0.1"
   }
 }
