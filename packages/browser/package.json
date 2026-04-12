@@ -64,11 +64,11 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "greybel-core": "~3.0.0",
+    "greybel-core": "~3.0.1",
     "lru-cache": "^11.1.0",
     "miniscript-meta": "~1.4.0",
-    "greybel-transpiler": "~4.0.0",
-    "greybel-type-analyzer": "~2.0.0",
+    "greybel-transpiler": "~4.0.1",
+    "greybel-type-analyzer": "~2.0.1",
     "miniscript-languageserver-core": "~3.0.2"
   }
 }
