@@ -20,6 +20,10 @@ const handleItem = (
   const result: SymbolInformation[] = [];
 
   for (const source of item.source) {
+    if (item.name == "") {
+      continue;
+    }
+
     const start = {
       line: source.start.line - 1,
       character: source.start.character - 1

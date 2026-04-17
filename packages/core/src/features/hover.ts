@@ -4,7 +4,6 @@ import {
 } from 'greybel-core';
 import { isFunctionType, isUnionType } from 'greybel-type-analyzer';
 import {
-  SignatureDefinitionBaseType,
   SignatureDefinitionTypeMeta
 } from 'meta-utils';
 import path from 'path';

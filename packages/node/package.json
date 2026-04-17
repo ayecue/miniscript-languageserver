@@ -1,6 +1,6 @@
 {
   "name": "miniscript-languageserver",
-  "version": "2.1.1",
+  "version": "3.0.0",
   "description": "Language server for MiniScript",
   "main": "./index.js",
   "scripts": {
@@ -69,10 +69,10 @@
   "dependencies": {
     "glob": "^11.0.0",
     "lru-cache": "^11.1.0",
-    "greybel-core": "~2.6.0",
-    "greybel-transpiler": "~3.8.1",
-    "miniscript-languageserver-core": "^2.1.0",
+    "greybel-core": "~3.0.1",
+    "greybel-transpiler": "~4.0.1",
+    "miniscript-languageserver-core": "~3.0.2",
     "miniscript-meta": "~1.4.0",
-    "greybel-type-analyzer": "~1.1.1"
+    "greybel-type-analyzer": "~2.0.1"
   }
 }
